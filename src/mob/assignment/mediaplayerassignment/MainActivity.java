@@ -11,6 +11,7 @@ import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
@@ -30,6 +31,8 @@ public class MainActivity extends Activity {
 	MediaPlayerServices mService;
 	boolean mBound;
 
+	private ServiceConnection mConnection;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -40,6 +43,23 @@ public class MainActivity extends Activity {
 		btnBrowse = (Button) findViewById(R.id.browseb);
 		sbProgress = (SeekBar) findViewById(R.id.sb);
 
+		mConnection = new ServiceConnection() {
+
+			@Override
+			public void onServiceConnected(ComponentName className, IBinder service) {
+				MediaPlayerServices.LocalBinder binder = (MediaPlayerServices.LocalBinder) service;
+				if (DEBUG)
+					Toast.makeText(getBaseContext(), "Connecting Service", Toast.LENGTH_SHORT).show();
+				mService = binder.getService();
+				mBound = true;
+			}
+
+			@Override
+			public void onServiceDisconnected(ComponentName arg0) {
+				mBound = false;
+			}
+		};
+		
 		addEventListeners();
 		/*
 		 * // Runnable responsible for updating the UI with playing progress. r
@@ -60,26 +80,14 @@ public class MainActivity extends Activity {
 		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 	}
 
-	private ServiceConnection mConnection = new ServiceConnection() {
-
-		@Override
-		public void onServiceConnected(ComponentName className, IBinder service) {
-			MediaPlayerServices.LocalBinder binder = (MediaPlayerServices.LocalBinder) service;
-			mService = binder.getService();
-			mBound = true;
-		}
-
-		@Override
-		public void onServiceDisconnected(ComponentName arg0) {
-			mBound = false;
-		}
-	};
-
 	private void addEventListeners() {
 		btnPlay.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				mService.play();
+				if (mService != null)
+					mService.play();
+				else if (DEBUG)
+					Toast.makeText(getBaseContext(), "mService is null - btnPlay", Toast.LENGTH_SHORT).show();
 			}
 		});
 		btnPause.setOnClickListener(new View.OnClickListener() {

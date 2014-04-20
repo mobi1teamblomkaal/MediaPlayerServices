@@ -6,6 +6,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.IBinder;
 import android.os.Binder;
+import android.widget.Toast;
 
 public class MediaPlayerServices extends Service {
 
@@ -17,14 +18,15 @@ public class MediaPlayerServices extends Service {
 
 	public class LocalBinder extends Binder {
 		MediaPlayerServices getService() {
-
+			if (MainActivity.DEBUG)
+				Toast.makeText(getBaseContext(), "Trying to bind", Toast.LENGTH_SHORT).show();
 			return MediaPlayerServices.this;
 		}
 	}
 
 	@Override
 	public IBinder onBind(Intent intent) {
-		mp = mp.create(
+		mp = MediaPlayer.create(
 				this,
 				Uri.parse("http://gototen.dk/wp-content/uploads/2013/12/dont-mess-with-my-man.mp3"));
 		return mBinder;
