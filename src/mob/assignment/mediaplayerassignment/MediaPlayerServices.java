@@ -37,8 +37,6 @@ public class MediaPlayerServices extends Service {
 			return;
 		}
 		if (!mp.isPlaying()) {
-			// mp = mp.create(this,
-			// Uri.parse("http://gototen.dk/wp-content/uploads/2013/12/dont-mess-with-my-man.mp3"));
 			mp.start();
 
 		}

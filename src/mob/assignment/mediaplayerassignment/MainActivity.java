@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
@@ -17,19 +16,14 @@ public class MainActivity extends Activity {
 
 	public static String path;
 	private static int seekBarMax = 0;
-	private static boolean newFileLoaded = false;
-	public static final boolean DEBUG = true;
+	public static final boolean DEBUG = false;
 	public static boolean isStarted = false;
 	private Button btnPlay;
 	private Button btnPause;
 	private Button btnStop;
 	private Button btnBrowse;
 	private static SeekBar sbProgress;
-	// private static MediaPlayer mp;
-	// private static Runnable r;
-	// private static Thread t;
 	MediaPlayerServices mService;
-	boolean mBound;
 
 	private ServiceConnection mConnection;
 
@@ -44,6 +38,7 @@ public class MainActivity extends Activity {
 		sbProgress = (SeekBar) findViewById(R.id.sb);
 
 		mConnection = new ServiceConnection() {
+			private boolean mBound;
 
 			@Override
 			public void onServiceConnected(ComponentName className, IBinder service) {
@@ -107,11 +102,9 @@ public class MainActivity extends Activity {
 		btnBrowse.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				newFileLoaded = true;
 				Intent i = new Intent(getBaseContext(),
 						FileBrowserActivity.class);
-				i.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-				startActivity(i);
+				startActivityForResult(i, 1);
 			}
 		});
 
@@ -121,6 +114,7 @@ public class MainActivity extends Activity {
 					public void onProgressChanged(SeekBar seekBar, int i,
 							boolean b) {
 						if (b) {
+//							TODO Add capability to seek in a song
 //							mp.seekTo(i);
 						}
 					}
@@ -137,6 +131,7 @@ public class MainActivity extends Activity {
 				});
 	}
 
+	@Override
 	 protected void onActivityResult(int requestCode, int resultCode, Intent data){
 	        if (requestCode == 1){
 	            if (resultCode == RESULT_OK) {
@@ -145,12 +140,4 @@ public class MainActivity extends Activity {
 	            }
 	        }
 	    }
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
-	}
-
 }
