@@ -6,6 +6,8 @@ import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -55,5 +57,27 @@ public class FileBrowserActivity extends ListActivity {
 					"The file type is not an audio file", Toast.LENGTH_SHORT)
 					.show();
 		}
+	}
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.file_browser, menu);
+		return true;
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+	    // Handle item selection
+	    switch (item.getItemId()) {
+	        case R.id.action_podcast:
+	            //TODO
+	            return true;
+	        case R.id.action_local_browse:
+	            //TODO
+	            return true;
+	        default:
+	            return super.onOptionsItemSelected(item);
+	    }
 	}
 }
