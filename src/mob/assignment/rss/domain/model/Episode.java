@@ -3,6 +3,11 @@ package mob.assignment.rss.domain.model;
 import java.net.URL;
 
 public class Episode extends Media {
+	public static final String TITLE = "title";
+	public static final String DESCRIPTION = "description";
+	public static final String DURATION = "itunes:duration";
+	public static final String LOCATION = "enclosure";
+	
 	private String description;
 	private URL location;
 	

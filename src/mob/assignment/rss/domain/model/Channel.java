@@ -4,6 +4,12 @@ import java.net.URL;
 import java.util.ArrayList;
 
 public class Channel {
+	
+	public static final String ITUNES_IMAGE = "itunes:image";
+	public static final String DESCRIPTION = "description";
+	public static final String TITLE = "title";
+	public static final String ITEM = "item";
+	
 	private String name;
 	private String description;
 	private URL coverart;
