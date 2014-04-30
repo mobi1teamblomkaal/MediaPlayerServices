@@ -14,18 +14,16 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
-	public static String path;
-	private static int seekBarMax = 0;
 	public static final boolean DEBUG = false;
-	public static boolean isStarted = false;
+
 	private Button btnPlay;
 	private Button btnPause;
 	private Button btnStop;
 	private Button btnBrowse;
-	private static SeekBar sbProgress;
-	MediaPlayerServices mService;
-
+	private SeekBar sbProgress;
+	private MediaPlayerServices mService;
 	private ServiceConnection mConnection;
+	private boolean mBound;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -36,15 +34,17 @@ public class MainActivity extends Activity {
 		btnStop = (Button) findViewById(R.id.stopb);
 		btnBrowse = (Button) findViewById(R.id.browseb);
 		sbProgress = (SeekBar) findViewById(R.id.sb);
+		sbProgress.setMax(1000);
 
 		mConnection = new ServiceConnection() {
-			private boolean mBound;
 
 			@Override
-			public void onServiceConnected(ComponentName className, IBinder service) {
+			public void onServiceConnected(ComponentName className,
+					IBinder service) {
 				MediaPlayerServices.LocalBinder binder = (MediaPlayerServices.LocalBinder) service;
 				if (DEBUG)
-					Toast.makeText(getBaseContext(), "Connecting Service", Toast.LENGTH_SHORT).show();
+					Toast.makeText(getBaseContext(), "Connecting Service",
+							Toast.LENGTH_SHORT).show();
 				mService = binder.getService();
 				mBound = true;
 			}
@@ -54,18 +54,8 @@ public class MainActivity extends Activity {
 				mBound = false;
 			}
 		};
-		
+
 		addEventListeners();
-		/*
-		 * // Runnable responsible for updating the UI with playing progress. r
-		 * = new Runnable() {
-		 * 
-		 * @Override public void run() { while (true) { try {
-		 * sbProgress.setProgress((mp == null) ? 0 : mp .getCurrentPosition());
-		 * Thread.sleep(250); } catch (InterruptedException e) {
-		 * Log.e("MedaiPlayerThread", "ProgressFAIL", e); } } } }; t = new
-		 * Thread(r); t.start();
-		 */
 	}
 
 	@Override
@@ -82,7 +72,9 @@ public class MainActivity extends Activity {
 				if (mService != null)
 					mService.play();
 				else if (DEBUG)
-					Toast.makeText(getBaseContext(), "mService is null - btnPlay", Toast.LENGTH_SHORT).show();
+					Toast.makeText(getBaseContext(),
+							"mService is null - btnPlay", Toast.LENGTH_SHORT)
+							.show();
 			}
 		});
 		btnPause.setOnClickListener(new View.OnClickListener() {
@@ -114,8 +106,7 @@ public class MainActivity extends Activity {
 					public void onProgressChanged(SeekBar seekBar, int i,
 							boolean b) {
 						if (b) {
-//							TODO Add capability to seek in a song
-//							mp.seekTo(i);
+							mService.seekTo(i);
 						}
 					}
 
@@ -132,12 +123,13 @@ public class MainActivity extends Activity {
 	}
 
 	@Override
-	 protected void onActivityResult(int requestCode, int resultCode, Intent data){
-	        if (requestCode == 1){
-	            if (resultCode == RESULT_OK) {
-	                path = data.getStringExtra("filename");
-	               mService.playSong(path);
-	            }
-	        }
-	    }
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (requestCode == 1) {
+			//TODO Handle situation where result is not OK
+			if (resultCode == RESULT_OK) {
+				String path = data.getStringExtra("filename");
+				mService.playSong(path);
+			}
+		}
+	}
 }

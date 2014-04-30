@@ -4,8 +4,8 @@ import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.IBinder;
 import android.os.Binder;
+import android.os.IBinder;
 import android.widget.Toast;
 
 public class MediaPlayerServices extends Service {
@@ -23,7 +23,7 @@ public class MediaPlayerServices extends Service {
 			return MediaPlayerServices.this;
 		}
 	}
-
+	
 	@Override
 	public IBinder onBind(Intent intent) {
 		mp = MediaPlayer.create(
@@ -76,4 +76,9 @@ public class MediaPlayerServices extends Service {
 		mp.start();
 	}
 
+	public void seekTo(int i) {
+		if (mp != null) {
+			mp.seekTo(i * mp.getDuration() / 1000);
+		}
+	}
 }
