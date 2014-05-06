@@ -23,7 +23,13 @@ public class RssParser {
 			XmlPullParserException, ParseException {
 
 		InputStream stream = connect(urlString);
-		return parseXml(stream);
+		Channel channel;
+		try {
+			channel = parseXml(stream);
+		} finally  {
+			stream.close();
+		}
+		return channel;
 	}
 
 	private static Channel parseXml(InputStream stream)
@@ -35,44 +41,72 @@ public class RssParser {
 		parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
 		parser.setInput(stream, null);
 		parser.nextTag();
+		parser.nextTag();
 
 		parser.require(XmlPullParser.START_TAG, null, "channel");
 		while (parser.next() != XmlPullParser.END_TAG) {
+			if (parser.getEventType() != XmlPullParser.START_TAG) {
+                continue;
+            }
 			String name = parser.getName();
-			String text = parser.getText();
+			
 
 			if (name.equalsIgnoreCase(Channel.TITLE)) {
-				channel.setName(text);
+				channel.setName(readText(parser));
 			} else if (name.equalsIgnoreCase(Channel.DESCRIPTION)) {
-				channel.setDescription(text);
+				channel.setDescription(readText(parser));
 			} else if (name.equalsIgnoreCase(Channel.ITUNES_IMAGE)) {
-				channel.setCoverart(new URL(parser.getAttributeValue(null,
-						"href")));
+				try {
+					URL coverart = new URL(parser.getAttributeValue(null,
+							"href"));
+					channel.setCoverart(coverart);
+				} finally {
+					parser.next();
+					parser.nextTag();
+				}
 			} else if (name.equalsIgnoreCase(Channel.ITEM)) {
 				Episode episode = new Episode();
 				parser.require(XmlPullParser.START_TAG, null, "item");
 				while (parser.next() != XmlPullParser.END_TAG) {
+					if (parser.getEventType() != XmlPullParser.START_TAG) {
+		                continue;
+		            }
 					name = parser.getName();
-					text = parser.getText();
 					if (name.equalsIgnoreCase(Episode.TITLE)) {
-						episode.setTitle(text);
+						episode.setTitle(readText(parser));
 					} else if (name.equalsIgnoreCase(Episode.DESCRIPTION)) {
-						episode.setDescription(text);
+						episode.setDescription(readText(parser));
 					} else if (name.equalsIgnoreCase(Episode.DURATION)) {
-						episode.setDuration(parseDuration(text));
+						episode.setDuration(parseDuration(readText(parser)));
 					} else if (name.equalsIgnoreCase(Episode.LOCATION)) {
-						episode.setLocation(new URL(parser.getAttributeValue(
+						try {
+							episode.setLocation(new URL(parser.getAttributeValue(
 								null, "url")));
+						} finally {
+							parser.next();
+							parser.nextTag();
+						}
 					} else {
 						skip(parser);
 					}
 				}
 				channel.addEpisode(episode);
+				parser.next();
+				parser.nextTag();
 			} else {
 				skip(parser);
 			}
 		}
 		return channel;
+	}
+
+	private static String readText(XmlPullParser parser) throws XmlPullParserException, IOException {
+		String text = "";
+		if (parser.next() == XmlPullParser.TEXT) {
+			text = parser.getText();
+			parser.nextTag();
+        }
+		return text;
 	}
 
 	private static InputStream connect(String urlString)
