@@ -1,0 +1,18 @@
+Application crashed when trying to show a dialog box.
+
+During setup of the dialog box, as context we passed the return value from getBaseContext(). To get it working, we instead passed passed it the current activity (this).
+
+
+Episodes not showing
+
+Channel adapter did not pass the actual episodes to super class. and was set to wrong generic class.
+
+public class ChannelAdapter extends ArrayAdapter<Channel> {
+	private Channel chData;
+	private Context context;
+
+	public ChannelAdapter(Context context, Channel objects) {
+		super(context, R.layout.file_list_item);
+		this.chData = objects;
+		this.context = context;
+	}
