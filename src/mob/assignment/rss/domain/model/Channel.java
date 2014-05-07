@@ -55,10 +55,7 @@ public class Channel {
 		episodeList.add(e);
 	}
 	
-	public Episode getEpisode(int index) throws IndexOutOfBoundsException {
-		if (index > episodeList.size() - 1) {
-			throw new IndexOutOfBoundsException();
-		}
+	public Episode getEpisode(int index) {
 		return episodeList.get(index);
 	}
 	

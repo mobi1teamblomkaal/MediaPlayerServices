@@ -1,27 +1,22 @@
 package mob.assignment.mediaplayerassignment;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.ParseException;
-
-import org.xmlpull.v1.XmlPullParserException;
+import java.net.URL;
 
 import mob.assignment.rss.domain.model.Channel;
+import mob.assignment.rss.domain.model.Episode;
 import mob.assignment.rss.util.xml.RssParser;
-
 import android.app.AlertDialog;
 import android.app.ListActivity;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.StrictMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -29,19 +24,52 @@ import android.widget.Toast;
 public class FileBrowserActivity extends ListActivity {
 	private File[] data;
 	private File root;
-	final Context context = this;
 	private EditText input;
-	RssParser rss;
-	Channel ch;
+	private Channel ch;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		root = new File("/"
-				+ Environment.getExternalStorageDirectory().getPath()
-				+ "/Music/");
-		data = getFileData(root);
-		setListAdapter(new FileAdapter(getBaseContext(), data));
+		//TODO change to run in AsuncTask
+		if (android.os.Build.VERSION.SDK_INT > 9) {
+	        StrictMode.ThreadPolicy policy = 
+	             new StrictMode.ThreadPolicy.Builder().permitAll().build();
+	        StrictMode.setThreadPolicy(policy);
+		}
+		
+		populateListView();
+	}
+
+	private void populateListView() {
+		switch (MainActivity.state) {
+		case LOCAL:
+			ch = null;
+			root = new File("/"
+					+ Environment.getExternalStorageDirectory().getPath()
+					+ "/Music/");
+			data = getFileData(root);
+			setListAdapter(new FileAdapter(getBaseContext(), data));
+			break;
+		case PODCAST:
+			data = null;
+			try {
+				ch = RssParser.parse(MainActivity.rss_url);
+			} catch (Exception e) {
+				//TODO Inform user of error!
+				if (MainActivity.DEBUG) {
+					e.printStackTrace();
+					// get user input and show it to the toast
+					Toast.makeText(getBaseContext(),
+							MainActivity.rss_url,
+							Toast.LENGTH_LONG).show();
+				}
+			}
+			setListAdapter(new ChannelAdapter(getBaseContext(), ch));
+			break;
+		default:
+			break;
+
+		}
 	}
 
 	private File[] getFileData(File file) {
@@ -61,19 +89,32 @@ public class FileBrowserActivity extends ListActivity {
 
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
-		File currentFile = data[position];
-		if (currentFile.isDirectory()) {
-			data = getFileData(currentFile);
-			setListAdapter(new FileAdapter(getBaseContext(), data));
-		} else if (FileType.isMediaFile(currentFile)) {
+		switch (MainActivity.state) {
+		case LOCAL:
+			File currentFile = data[position];
+			if (currentFile.isDirectory()) {
+				data = getFileData(currentFile);
+				setListAdapter(new FileAdapter(getBaseContext(), data));
+			} else if (FileType.isMediaFile(currentFile)) {
+				Intent i = new Intent();
+				i.putExtra("filename", currentFile.getAbsolutePath());
+				setResult(RESULT_OK, i);
+				finish();
+			} else {
+				Toast.makeText(getBaseContext(),
+						"The file type is not an audio file",
+						Toast.LENGTH_SHORT).show();
+			}
+			break;
+		case PODCAST:
 			Intent i = new Intent();
-			i.putExtra("filename", currentFile.getAbsolutePath());
+			i.putExtra("filename", ch.getEpisode(position).getLocation());
 			setResult(RESULT_OK, i);
 			finish();
-		} else {
-			Toast.makeText(getBaseContext(),
-					"The file type is not an audio file", Toast.LENGTH_SHORT)
-					.show();
+			break;
+		default:
+			break;
+
 		}
 	}
 
@@ -89,17 +130,17 @@ public class FileBrowserActivity extends ListActivity {
 		// Handle item selection
 		switch (item.getItemId()) {
 		case R.id.action_podcast:
-			LayoutInflater layoutInflater = LayoutInflater.from(context);
+			LayoutInflater layoutInflater = LayoutInflater.from(this);
 
 			View promptView = layoutInflater.inflate(R.layout.prompts, null);
 
 			AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
-					context);
+					this);
 
 			// set prompts.xml to be the layout file of the alertdialog builder
 			alertDialogBuilder.setView(promptView);
 			input = (EditText) promptView.findViewById(R.id.userInput);
-			//String sinput = input.toString();
+			
 			// setup a dialog window
 			alertDialogBuilder
 					.setCancelable(false)
@@ -107,23 +148,9 @@ public class FileBrowserActivity extends ListActivity {
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
 										int id) {
-									// get user input and show it to the toast
-									Toast.makeText(context, input.getText(),
-											Toast.LENGTH_LONG).show();
-
-									/** the link to be passed to the XML parser */
-									try {
-										rss.parse(input.toString());
-									} catch (IOException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									} catch (XmlPullParserException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									} catch (ParseException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									}
+									MainActivity.rss_url = input.getText().toString();
+									MainActivity.state = State.PODCAST; //Changed state to PODCAST
+									populateListView();
 
 								}
 							})
@@ -137,19 +164,11 @@ public class FileBrowserActivity extends ListActivity {
 
 			// create an alert dialog
 			AlertDialog alertD = alertDialogBuilder.create();
-
 			alertD.show();
 
 		case R.id.action_local_browse:
-			
-			
-			setListAdapter(new ChannelAdapter(getBaseContext(), ch));
-			Intent i = new Intent();
-			i.putExtra("episode", ch.getEpisodeList());
-			setResult(RESULT_OK, i);
-			finish();
-			return true;
-
+			MainActivity.state = State.LOCAL;
+			populateListView();
 		default:
 			return super.onOptionsItemSelected(item);
 		}

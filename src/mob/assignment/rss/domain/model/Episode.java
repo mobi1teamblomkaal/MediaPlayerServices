@@ -9,9 +9,9 @@ public class Episode extends Media {
 	public static final String LOCATION = "enclosure";
 	
 	private String description;
-	private URL location;
+	private String location;
 	
-	public Episode(String description, URL location) {
+	public Episode(String description, String location) {
 		super();
 		this.description = description;
 		this.location = location;
@@ -21,13 +21,13 @@ public class Episode extends Media {
 		super();
 	}
 
-	public Episode(String description, URL location, String title, int duration) {
+	public Episode(String description, String location, String title, int duration) {
 		super(title, duration);
 		this.description = description;
 		this.location = location;
 	}
 
-	public Episode(String description, URL location, String title, int duration, int progress) {
+	public Episode(String description, String location, String title, int duration, int progress) {
 		super(title, duration, progress);
 		this.description = description;
 		this.location = location;
@@ -41,11 +41,11 @@ public class Episode extends Media {
 		this.description = description;
 	}
 
-	public URL getLocation() {
+	public String getLocation() {
 		return location;
 	}
 
-	public void setLocation(URL location) {
+	public void setLocation(String location) {
 		this.location = location;
 	}
 }

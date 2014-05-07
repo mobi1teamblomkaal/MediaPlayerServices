@@ -14,8 +14,12 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
-	public static final boolean DEBUG = false;
+	public static final boolean DEBUG = true;
 
+	
+	public static State state = State.LOCAL;
+	public static String rss_url = "";
+			;
 	private Button btnPlay;
 	private Button btnPause;
 	private Button btnStop;

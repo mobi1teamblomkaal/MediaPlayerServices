@@ -80,8 +80,8 @@ public class RssParser {
 						episode.setDuration(parseDuration(readText(parser)));
 					} else if (name.equalsIgnoreCase(Episode.LOCATION)) {
 						try {
-							episode.setLocation(new URL(parser.getAttributeValue(
-								null, "url")));
+							episode.setLocation(parser.getAttributeValue(
+								null, "url"));
 						} finally {
 							parser.next();
 							parser.nextTag();
@@ -150,7 +150,7 @@ public class RssParser {
 		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 		try {
 			return (int) (sdf.parse(time).getTime() + 3600000);
-		} catch (ParseException e) {
+		} catch (Exception e) {
 			return 0;
 		}
 	}
