@@ -54,17 +54,17 @@ public class FileBrowserActivity extends ListActivity {
 			data = null;
 			try {
 				ch = RssParser.parse(MainActivity.rss_url);
+				setListAdapter(new ChannelAdapter(getBaseContext(), ch));
 			} catch (Exception e) {
 				//TODO Inform user of error!
 				if (MainActivity.DEBUG) {
 					e.printStackTrace();
 					// get user input and show it to the toast
 					Toast.makeText(getBaseContext(),
-							MainActivity.rss_url,
+							MainActivity.rss_url + " could not be parsed to a usable channel.",
 							Toast.LENGTH_LONG).show();
 				}
 			}
-			setListAdapter(new ChannelAdapter(getBaseContext(), ch));
 			break;
 		default:
 			break;
