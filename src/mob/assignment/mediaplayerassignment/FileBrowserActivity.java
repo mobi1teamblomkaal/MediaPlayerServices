@@ -1,10 +1,8 @@
 package mob.assignment.mediaplayerassignment;
 
 import java.io.File;
-import java.net.URL;
 
 import mob.assignment.rss.domain.model.Channel;
-import mob.assignment.rss.domain.model.Episode;
 import mob.assignment.rss.util.xml.RssParser;
 import android.app.AlertDialog;
 import android.app.ListActivity;
@@ -52,25 +50,30 @@ public class FileBrowserActivity extends ListActivity {
 			break;
 		case PODCAST:
 			data = null;
-			try {
-				ch = RssParser.parse(MainActivity.rss_url);
-				setListAdapter(new ChannelAdapter(getBaseContext(), ch));
-			} catch (Exception e) {
-				//TODO Inform user of error!
-				if (MainActivity.DEBUG) {
-					e.printStackTrace();
-					// get user input and show it to the toast
-					Toast.makeText(getBaseContext(),
-							MainActivity.rss_url + " could not be parsed to a usable channel.",
-							Toast.LENGTH_LONG).show();
-				}
-			}
+			new RssParser().execute(MainActivity.rss_url);
+//			try {
+//				ch = RssParser.parse(MainActivity.rss_url);
+//			} catch (Exception e) {
+//				//TODO Inform user of error!
+//				if (MainActivity.DEBUG) {
+//					e.printStackTrace();
+//					// get user input and show it to the toast
+//					Toast.makeText(getBaseContext(),
+//							MainActivity.rss_url,
+//							Toast.LENGTH_LONG).show();
+//				}
+//			}
+//			setListAdapter(new ChannelAdapter(getBaseContext(), ch));
 			break;
 		default:
 			break;
 
 		}
 	}
+	
+	protected void onPostExecute(Channel result) {
+		setListAdapter(new ChannelAdapter(getBaseContext(), result));
+    }
 
 	private File[] getFileData(File file) {
 		File parentFile = file.getParentFile();

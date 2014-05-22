@@ -15,9 +15,22 @@ import mob.assignment.rss.domain.model.Episode;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
+import android.os.AsyncTask;
 import android.util.Xml;
 
-public class RssParser {
+public class RssParser extends AsyncTask<String, Void, Channel> {
+	
+
+	@Override
+	protected Channel doInBackground(String... params) {
+		try {
+			return parse(params[0]);
+		} catch (Exception e) {
+			// TODO Error handling.
+			e.printStackTrace();
+		}
+		return null;
+	}
 
 	public static Channel parse(String urlString) throws IOException,
 			XmlPullParserException, ParseException {
